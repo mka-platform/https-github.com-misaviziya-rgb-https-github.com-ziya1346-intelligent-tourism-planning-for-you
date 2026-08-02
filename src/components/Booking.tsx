@@ -65,21 +65,38 @@ const Booking = () => {
     setStep(1);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name || !phone || !email || !postcode) {
       toast.error("Please fill in all contact details");
       return;
     }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid email address");
+
+    if (!dateRange?.from || !dateRange?.to) {
+      toast.error("Please select check-in and check-out dates");
       return;
     }
-    
-    setDirection(1);
-    setStep(3);
+
+    setSubmitting(true);
+    try {
+      await createBooking({
+        locationId: location,
+        guestName: name,
+        email,
+        phone,
+        checkInDate: dateRange.from,
+        checkOutDate: dateRange.to,
+        guests: parseInt(guests, 10) || 1,
+        notes: `Postcode: ${postcode}`,
+      });
+      setDirection(1);
+      setStep(3);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not submit booking");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   const handleReset = () => {
     setDirection(-1);
