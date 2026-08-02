@@ -243,29 +243,30 @@ const Admin = () => {
                       </TableHeader>
                       <TableBody>
                         {filteredBookings.map((booking) => {
-                          const location = getLocationById(booking.locationId);
+                          const location = getLocationById(booking.location_id);
                           return (
                             <TableRow key={booking.id} className="border-border">
                               <TableCell>
                                 <div>
-                                  <p className="text-sm font-normal">{booking.guestName}</p>
-                                  <p className="text-xs text-muted-foreground font-light">{booking.id}</p>
+                                  <p className="text-sm font-normal">{booking.guest_name}</p>
+                                  <p className="text-xs text-muted-foreground font-light">{booking.id.slice(0, 8)}</p>
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <MapPin className="h-3 w-3 text-muted-foreground" />
-                                  <span className="text-sm font-light">{location?.name || booking.locationId}</span>
+                                  <span className="text-sm font-light">{location?.name || booking.location_id}</span>
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <div className="text-sm font-light">
-                                  <p>{format(booking.checkIn, "MMM d")} - {format(booking.checkOut, "MMM d, yyyy")}</p>
+                                  <p>{format(new Date(booking.check_in_date), "MMM d")} - {format(new Date(booking.check_out_date), "MMM d, yyyy")}</p>
                                   <p className="text-xs text-muted-foreground">
-                                    {Math.ceil((booking.checkOut.getTime() - booking.checkIn.getTime()) / (1000 * 60 * 60 * 24))} nights
+                                    {countNights(booking)} nights
                                   </p>
                                 </div>
                               </TableCell>
+
                               <TableCell>
                                 <div className="flex items-center gap-1">
                                   <Users className="h-3 w-3 text-muted-foreground" />
