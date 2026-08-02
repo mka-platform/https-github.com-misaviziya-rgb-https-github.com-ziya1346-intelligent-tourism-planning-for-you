@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { toast } from "sonner";
 import { CalendarDays, Users, MapPin, ArrowRight, ArrowLeft, CheckCircle, User, Phone, Mail, MapPinned } from "lucide-react";
 import { locations } from "@/data/locations";
+import { createBooking } from "@/services/booking.service";
+
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -36,6 +38,9 @@ const Booking = () => {
   // Form step state
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  
+
   
   // Step 1 fields - changed to date range
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
