@@ -33,29 +33,27 @@ export const validateCreateBookingDto = (dto: CreateBookingDto): string | null =
   return null;
 };
 
-export const createBooking = async (dto: CreateBookingDto): Promise<BookingRecord> => {
+export const createBooking = async (dto: CreateBookingDto): Promise<void> => {
   const validationError = validateCreateBookingDto(dto);
   if (validationError) throw new Error(validationError);
 
-  const { data, error } = await supabase
-    .from("bookings")
-    .insert({
-      location_id: dto.locationId,
-      guest_name: dto.guestName.trim(),
-      email: dto.email.trim(),
-      phone: dto.phone.trim(),
-      check_in_date: toIsoDate(dto.checkInDate),
-      check_out_date: toIsoDate(dto.checkOutDate),
-      guests: dto.guests,
-      notes: dto.notes?.trim() || null,
-      status: "pending",
-    })
-    .select()
-    .single();
+  // NOTE: no `.select()` here — guests may submit anonymously and have no read
+  // access to bookings, so returning the inserted row would fail RLS.
+  const { error } = await supabase.from("bookings").insert({
+    location_id: dto.locationId,
+    guest_name: dto.guestName.trim(),
+    email: dto.email.trim(),
+    phone: dto.phone.trim(),
+    check_in_date: toIsoDate(dto.checkInDate),
+    check_out_date: toIsoDate(dto.checkOutDate),
+    guests: dto.guests,
+    notes: dto.notes?.trim() || null,
+    status: "pending",
+  });
 
   if (error) throw new Error(error.message);
-  return data;
 };
+
 
 export const listBookings = async (): Promise<BookingRecord[]> => {
   const { data, error } = await supabase
