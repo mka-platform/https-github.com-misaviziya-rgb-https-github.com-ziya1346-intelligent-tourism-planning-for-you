@@ -88,16 +88,22 @@ const Admin = () => {
     }
   };
 
+  const countNights = (booking: BookingRecord) =>
+    Math.ceil(
+      (new Date(booking.check_out_date).getTime() - new Date(booking.check_in_date).getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+
   const calculateRevenue = () => {
     return filteredBookings
       .filter(b => b.status !== 'cancelled')
       .reduce((total, booking) => {
-        const location = getLocationById(booking.locationId);
+        const location = getLocationById(booking.location_id);
         if (!location) return total;
-        const nights = Math.ceil((booking.checkOut.getTime() - booking.checkIn.getTime()) / (1000 * 60 * 60 * 24));
-        return total + (location.price * nights);
+        return total + (location.price * countNights(booking));
       }, 0);
   };
+
 
   return (
     <div className="min-h-screen bg-background">
