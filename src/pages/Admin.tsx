@@ -17,9 +17,10 @@ import {
 } from "@/components/ui/table";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { mockBookings, getBookingStats } from "@/data/bookings";
 import { locations, getLocationById } from "@/data/locations";
 import { useAuth } from "@/hooks/useAuth";
+import { listBookings, type BookingRecord } from "@/services/booking.service";
+import { toast } from "sonner";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -27,13 +28,39 @@ const Admin = () => {
   const isDemo = searchParams.get("demo") === "true";
   const { user, loading, signOut } = useAuth();
   const [selectedLocation, setSelectedLocation] = useState("all");
-  const stats = getBookingStats();
+  const [bookings, setBookings] = useState<BookingRecord[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user && !isDemo) {
       navigate("/auth");
     }
   }, [loading, user, navigate, isDemo]);
+
+  useEffect(() => {
+    if (!user) {
+      setBookingsLoading(false);
+      return;
+    }
+    listBookings()
+      .then(setBookings)
+      .catch((error: unknown) =>
+        toast.error(error instanceof Error ? error.message : "Could not load bookings")
+      )
+      .finally(() => setBookingsLoading(false));
+  }, [user]);
+
+  const stats = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const active = bookings.filter((b) => b.status !== "cancelled");
+    return {
+      total: bookings.length,
+      confirmed: bookings.filter((b) => b.status === "confirmed").length,
+      pending: bookings.filter((b) => b.status === "pending").length,
+      upcoming: active.filter((b) => new Date(b.check_in_date) >= today).length,
+    };
+  })();
 
   if (loading && !isDemo) {
     return (
@@ -44,8 +71,9 @@ const Admin = () => {
   }
 
   const filteredBookings = selectedLocation === "all" 
-    ? mockBookings 
-    : mockBookings.filter(b => b.locationId === selectedLocation);
+    ? bookings 
+    : bookings.filter(b => b.location_id === selectedLocation);
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -60,16 +88,22 @@ const Admin = () => {
     }
   };
 
+  const countNights = (booking: BookingRecord) =>
+    Math.ceil(
+      (new Date(booking.check_out_date).getTime() - new Date(booking.check_in_date).getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+
   const calculateRevenue = () => {
     return filteredBookings
       .filter(b => b.status !== 'cancelled')
       .reduce((total, booking) => {
-        const location = getLocationById(booking.locationId);
+        const location = getLocationById(booking.location_id);
         if (!location) return total;
-        const nights = Math.ceil((booking.checkOut.getTime() - booking.checkIn.getTime()) / (1000 * 60 * 60 * 24));
-        return total + (location.price * nights);
+        return total + (location.price * countNights(booking));
       }, 0);
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -209,29 +243,30 @@ const Admin = () => {
                       </TableHeader>
                       <TableBody>
                         {filteredBookings.map((booking) => {
-                          const location = getLocationById(booking.locationId);
+                          const location = getLocationById(booking.location_id);
                           return (
                             <TableRow key={booking.id} className="border-border">
                               <TableCell>
                                 <div>
-                                  <p className="text-sm font-normal">{booking.guestName}</p>
-                                  <p className="text-xs text-muted-foreground font-light">{booking.id}</p>
+                                  <p className="text-sm font-normal">{booking.guest_name}</p>
+                                  <p className="text-xs text-muted-foreground font-light">{booking.id.slice(0, 8)}</p>
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <MapPin className="h-3 w-3 text-muted-foreground" />
-                                  <span className="text-sm font-light">{location?.name || booking.locationId}</span>
+                                  <span className="text-sm font-light">{location?.name || booking.location_id}</span>
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <div className="text-sm font-light">
-                                  <p>{format(booking.checkIn, "MMM d")} - {format(booking.checkOut, "MMM d, yyyy")}</p>
+                                  <p>{format(new Date(booking.check_in_date), "MMM d")} - {format(new Date(booking.check_out_date), "MMM d, yyyy")}</p>
                                   <p className="text-xs text-muted-foreground">
-                                    {Math.ceil((booking.checkOut.getTime() - booking.checkIn.getTime()) / (1000 * 60 * 60 * 24))} nights
+                                    {countNights(booking)} nights
                                   </p>
                                 </div>
                               </TableCell>
+
                               <TableCell>
                                 <div className="flex items-center gap-1">
                                   <Users className="h-3 w-3 text-muted-foreground" />

@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { toast } from "sonner";
 import { CalendarDays, Users, MapPin, ArrowRight, ArrowLeft, CheckCircle, User, Phone, Mail, MapPinned } from "lucide-react";
 import { locations } from "@/data/locations";
+import { createBooking } from "@/services/booking.service";
+
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -36,6 +38,9 @@ const Booking = () => {
   // Form step state
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  
+
   
   // Step 1 fields - changed to date range
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -65,21 +70,38 @@ const Booking = () => {
     setStep(1);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name || !phone || !email || !postcode) {
       toast.error("Please fill in all contact details");
       return;
     }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid email address");
+
+    if (!dateRange?.from || !dateRange?.to) {
+      toast.error("Please select check-in and check-out dates");
       return;
     }
-    
-    setDirection(1);
-    setStep(3);
+
+    setSubmitting(true);
+    try {
+      await createBooking({
+        locationId: location,
+        guestName: name,
+        email,
+        phone,
+        checkInDate: dateRange.from,
+        checkOutDate: dateRange.to,
+        guests: parseInt(guests, 10) || 1,
+        notes: `Postcode: ${postcode}`,
+      });
+      setDirection(1);
+      setStep(3);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not submit booking");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   const handleReset = () => {
     setDirection(-1);
@@ -312,10 +334,12 @@ const Booking = () => {
                       </Button>
                       <Button
                         size="default"
+                        disabled={submitting}
                         className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md smooth-hover text-[11px] uppercase tracking-wider font-normal"
                         onClick={handleSubmit}
                       >
-                        Submit Booking
+                        {submitting ? "Submitting..." : "Submit Booking"}
+
                       </Button>
                     </div>
                   </div>
