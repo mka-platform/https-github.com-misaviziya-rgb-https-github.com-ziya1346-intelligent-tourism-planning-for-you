@@ -334,10 +334,12 @@ const Booking = () => {
                       </Button>
                       <Button
                         size="default"
+                        disabled={submitting}
                         className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md smooth-hover text-[11px] uppercase tracking-wider font-normal"
                         onClick={handleSubmit}
                       >
-                        Submit Booking
+                        {submitting ? "Submitting..." : "Submit Booking"}
+
                       </Button>
                     </div>
                   </div>
