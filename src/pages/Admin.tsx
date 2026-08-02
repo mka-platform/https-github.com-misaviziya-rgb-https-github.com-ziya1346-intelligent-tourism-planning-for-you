@@ -17,9 +17,10 @@ import {
 } from "@/components/ui/table";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { mockBookings, getBookingStats } from "@/data/bookings";
 import { locations, getLocationById } from "@/data/locations";
 import { useAuth } from "@/hooks/useAuth";
+import { listBookings, type BookingRecord } from "@/services/booking.service";
+import { toast } from "sonner";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -27,13 +28,39 @@ const Admin = () => {
   const isDemo = searchParams.get("demo") === "true";
   const { user, loading, signOut } = useAuth();
   const [selectedLocation, setSelectedLocation] = useState("all");
-  const stats = getBookingStats();
+  const [bookings, setBookings] = useState<BookingRecord[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user && !isDemo) {
       navigate("/auth");
     }
   }, [loading, user, navigate, isDemo]);
+
+  useEffect(() => {
+    if (!user) {
+      setBookingsLoading(false);
+      return;
+    }
+    listBookings()
+      .then(setBookings)
+      .catch((error: unknown) =>
+        toast.error(error instanceof Error ? error.message : "Could not load bookings")
+      )
+      .finally(() => setBookingsLoading(false));
+  }, [user]);
+
+  const stats = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const active = bookings.filter((b) => b.status !== "cancelled");
+    return {
+      total: bookings.length,
+      confirmed: bookings.filter((b) => b.status === "confirmed").length,
+      pending: bookings.filter((b) => b.status === "pending").length,
+      upcoming: active.filter((b) => new Date(b.check_in_date) >= today).length,
+    };
+  })();
 
   if (loading && !isDemo) {
     return (
@@ -44,8 +71,9 @@ const Admin = () => {
   }
 
   const filteredBookings = selectedLocation === "all" 
-    ? mockBookings 
-    : mockBookings.filter(b => b.locationId === selectedLocation);
+    ? bookings 
+    : bookings.filter(b => b.location_id === selectedLocation);
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
