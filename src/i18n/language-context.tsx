@@ -70,7 +70,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       const template = getDictionary(language)[key] ?? key;
       if (!vars) return template;
       return Object.entries(vars).reduce(
-        (acc, [name, value]) => acc.replaceAll(`{${name}}`, String(value)),
+        (acc, [name, value]) => acc.split(`{${name}}`).join(String(value)),
         template,
       );
     },
