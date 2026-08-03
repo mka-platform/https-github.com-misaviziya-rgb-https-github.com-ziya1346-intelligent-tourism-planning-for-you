@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Tent } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import LanguageSwitcher from "./LanguageSwitcher";
 interface NavigationProps {
   variant?: "default" | "dark";
 }
@@ -75,10 +76,12 @@ const Navigation = ({
                 </Link> : <a key={item.label} href={item.href} className={`text-[11px] uppercase tracking-wider font-normal smooth-hover hover:opacity-60 ${isDark || !isScrolled ? "text-white" : "text-foreground"}`}>
                   {item.label}
                 </a>)}
+            <LanguageSwitcher className={isDark || !isScrolled ? "text-white" : "text-foreground"} />
             <Button variant="outline" size="sm" className={`rounded-full smooth-hover text-[11px] uppercase tracking-wider font-normal backdrop-blur-md border border-white/30 shadow-[0_4px_30px_rgba(0,0,0,0.1)] px-5 ${isDark || !isScrolled ? "bg-white/10 text-white hover:bg-primary/80 hover:text-white hover:border-primary/80" : "bg-white/20 text-foreground hover:bg-primary/80 hover:text-white hover:border-primary/80"}`} onClick={handleBookNow}>
               Book Now
             </Button>
           </div>
+
 
           <button className={`md:hidden ${isMobileMenuOpen || isDark || !isScrolled ? "text-white" : "text-foreground"}`} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
