@@ -10,6 +10,8 @@ import Locations from "./pages/Locations";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import Plan from "./pages/Plan";
+
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 import { LanguageProvider } from "./i18n/language-context";
