@@ -38,10 +38,15 @@ const Navigation = ({
     }
   };
   const navItems = [{
+    label: "Plan a trip",
+    href: "/plan",
+    isRoute: true
+  }, {
     label: "Locations",
     href: "/locations",
     isRoute: true
   }, {
+
     label: "About",
     href: "/about",
     isRoute: true
