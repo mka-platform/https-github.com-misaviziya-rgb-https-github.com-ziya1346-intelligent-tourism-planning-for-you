@@ -10,6 +10,8 @@ import Locations from "./pages/Locations";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import Plan from "./pages/Plan";
+
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 import { LanguageProvider } from "./i18n/language-context";
@@ -32,6 +34,9 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/plan" element={<Plan />} />
+            <Route path="/plan/:threadId" element={<Plan />} />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
