@@ -95,10 +95,10 @@ export const locations: Location[] = [
       "Mountain biking trails nearby",
     ],
     reviews: [
-      { author: "David L.", rating: 5, date: "January 2026", comment: "The lake views are unreal! Kayaking at sunrise was the highlight of our trip." },
+      { author: "David L.", rating: 5, date: "January 2026", comment: "The lake views are unreal! Kayaking at sunrise was the highlight of our trip. We got a free kayak upgrade!" },
       { author: "Anna K.", rating: 5, date: "December 2025", comment: "Perfect romantic getaway. The private dock made us feel like we had the whole lake to ourselves." },
       { author: "Chris P.", rating: 5, date: "November 2025", comment: "Caught some amazing fish and the outdoor kitchen was perfect for cooking them up." },
-      { author: "Lisa H.", rating: 5, date: "October 2025", comment: "Exceeded all expectations. The mountain reflections on the lake were breathtaking." },
+      { author: "Lisa H.", rating: 5, date: "October 2025", comment: "Exceeded all expectations. The mountain reflections on the lake were breathtaking. 10% discount code was accepted." },
     ],
   },
   {
@@ -192,7 +192,7 @@ export const locations: Location[] = [
     ],
     reviews: [
       { author: "Brian H.", rating: 5, date: "January 2026", comment: "Falling asleep to the sound of the river is pure bliss. Caught several trout!" },
-      { author: "Amanda C.", rating: 5, date: "December 2025", comment: "Perfect for our family. Kids loved playing by the river all day." },
+      { author: "Amanda C.", rating: 5, date: "December 2025", comment: "Perfect for our family. Kids loved playing by the river all day. Free canoe for kids!" },
       { author: "Steve M.", rating: 4, date: "November 2025", comment: "Great fishing spot. The guided nature walk was informative and fun." },
       { author: "Karen B.", rating: 5, date: "October 2025", comment: "Saw so many birds! The canoe trip down the river was magical." },
     ],
@@ -231,6 +231,18 @@ export const locations: Location[] = [
   },
 ];
 
-export const getFeaturedLocations = () => locations.filter(loc => loc.featured);
+/** Sort locations by rating descending (best first). Used for ranking rule. */
+export const getSortedLocations = (): Location[] =>
+  [...locations].sort((a, b) => b.rating - a.rating || a.price - b.price);
 
-export const getLocationById = (id: string) => locations.find(loc => loc.id === id);
+/** Featured locations sorted by rating (best first). */
+export const getFeaturedLocations = (): Location[] =>
+  locations.filter((loc) => loc.featured).sort((a, b) => b.rating - a.rating);
+
+export const getLocationById = (id: string) => locations.find((loc) => loc.id === id);
+
+/** Explain ranking transparently when user asks. */
+export const getRankingExplanation = (loc: Location): string => {
+  const rank = getSortedLocations().findIndex((l) => l.id === loc.id) + 1;
+  return `Ranked #${rank} based on guest rating (${loc.rating}/5) and review quality. Higher-rated locations appear first in suggestions.`;
+};
