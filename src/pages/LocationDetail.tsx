@@ -1,19 +1,20 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import { ArrowLeft, MapPin, Star, Calendar, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { ArrowLeft, MapPin, Star, Calendar, ChevronLeft, ChevronRight, Quote, Tag } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { toast } from "sonner";
 import { getLocationById } from "@/data/locations";
+import { extractOffersFromReviews } from "@/lib/offer-extractor";
 
 const LocationDetail = () => {
   const { id } = useParams();
@@ -29,6 +30,12 @@ const LocationDetail = () => {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
 
+  // Extract offers only from real review text – never invented
+  const guestOffers = useMemo(() => {
+    if (!location?.reviews?.length) return [];
+    return extractOffersFromReviews(location.reviews);
+  }, [location]);
+
   if (!location) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -42,7 +49,6 @@ const LocationDetail = () => {
     );
   }
 
-  // Combine main image with detail images for the gallery
   const allImages = [location.image, ...location.images];
 
   const handleBooking = () => {
@@ -71,7 +77,6 @@ const LocationDetail = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Navigation />
       
-      {/* Hero Image with Parallax */}
       <div className="relative w-full h-[50vh] overflow-hidden">
         <motion.img
           src={allImages[0]}
@@ -97,7 +102,6 @@ const LocationDetail = () => {
             Back to locations
           </Button>
 
-          {/* Title, Description, Rating */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -120,7 +124,6 @@ const LocationDetail = () => {
             </p>
           </motion.div>
 
-          {/* Full Width Image Slideshow */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -140,7 +143,6 @@ const LocationDetail = () => {
               />
             </AnimatePresence>
             
-            {/* Navigation Arrows */}
             <button
               onClick={prevImage}
               className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
@@ -154,7 +156,6 @@ const LocationDetail = () => {
               <ChevronRight className="h-6 w-6" />
             </button>
 
-            {/* Image Indicators */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
               {allImages.map((_, index) => (
                 <button
@@ -167,13 +168,11 @@ const LocationDetail = () => {
               ))}
             </div>
 
-            {/* Image Counter */}
             <div className="absolute bottom-4 right-4 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs font-light">
               {currentImageIndex + 1} / {allImages.length}
             </div>
           </motion.div>
 
-          {/* Content Grid */}
           <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
             <div className="lg:col-span-2 space-y-10">
               <motion.div
@@ -222,7 +221,46 @@ const LocationDetail = () => {
                 </Card>
               </motion.div>
 
-              {/* Reviews Carousel */}
+              {/* Offers extracted only from real guest reviews */}
+              {guestOffers.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.45 }}
+                >
+                  <Card className="p-8 border border-border shadow-soft">
+                    <h2 className="text-[11px] uppercase tracking-wider font-normal mb-2 flex items-center gap-2">
+                      <Tag className="h-3.5 w-3.5" />
+                      Offers mentioned by guests
+                    </h2>
+                    <p className="text-xs text-muted-foreground font-light mb-5">
+                      Only extracted from real review text. Nothing is invented.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {guestOffers.map((offer, idx) => (
+                        <div
+                          key={idx}
+                          className="inline-flex items-center gap-2 rounded-full border border-border bg-accent/40 px-3 py-1.5 text-xs"
+                        >
+                          <span className="font-medium">{offer.text}</span>
+                          <span
+                            className={`rounded-full px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${
+                              offer.confidence === "High"
+                                ? "bg-primary/20 text-primary"
+                                : offer.confidence === "Medium"
+                                  ? "bg-muted text-muted-foreground"
+                                  : "bg-muted/50 text-muted-foreground"
+                            }`}
+                          >
+                            {offer.confidence}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
