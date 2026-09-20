@@ -1,6 +1,8 @@
-# Intelligent tourism planning for you
+# Intelligent Tourism Planning – Mosavi Platform
 
-make me a website with soft colours, cream and green tones for an off grid camping booking service, all integrated with a working booking system, lots of imagery, make it look like a framer website with smooth scroll, smooth hover states
+پلتفرم برنامه‌ریزی هوشمند گردشگری و رزرو با پشتیبانی از سه سطح بودجه (اقتصادی / متوسط / عالی).
+
+**Owner:** Ziaoddin Mousavi Jarrahi (ضیاءالدین موسوی جراحی)
 
 This project was built with [Lovable](https://lovable.dev).
 

@@ -231,13 +231,6 @@ export const locations: Location[] = [
   },
 ];
 
-eexport type LocationType = "camping" | "hotel" | "tour" | "eco";
-
-export interface Location {
-  id: string;
-  name: string;
-  type: LocationType; // جدید
-  // ... بقیه فیلدها
-}xport const getFeaturedLocations = () => locations.filter(loc => loc.featured);
+export const getFeaturedLocations = () => locations.filter(loc => loc.featured);
 
 export const getLocationById = (id: string) => locations.find(loc => loc.id === id);
